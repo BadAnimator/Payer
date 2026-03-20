@@ -49,24 +49,30 @@ def AdminBroadCast(text: str, pm:str = "HTML") -> bool:
 
 def ProcessCreateCheck(message, amount) -> bool:
 	if message.text.lower() == "нет":
-		More=False
+		More=0
 	else:
-		More=True
+		More=1
 	with Database(DB_NAME) as db:
-		UniqueId = "pay_" + RandomString(24)
-		db.add(
-			"Checks", {
-				"CreateTime": int(time.time()), "Amount": amount,
-				"More": More, "Payed": 0,
-				"UniqueID": UniqueId, "PayedCount": 0
-			}
-		)
+		try:
+			UniqueId = RandomString(24)
+			db.add(
+				"Checks", {
+					"CreateTime": int(time.time()), "Amount": amount,
+					"More": More, "Payed": 0,
+					"UniqueID": UniqueId, "PayedCount": 0
+				}
+			)
+		except Exception as e:
+			bot.send_message(message.chat.id, f"Ошибка при записи: {e}")
+		# d = open(DB_NAME, 'rb')
+		# bot.send_document(message.chat.id, d, caption="Bd", timeout=360)
+		# d.close()
 		Kb=InlineKeyboardMarkup()
-		print(f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start={UniqueId}")
+		print(f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start=pay_{UniqueId}")
 		Kb.add(
-			InlineKeyboardButton("Поделиться", url=f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start={UniqueId}")
+			InlineKeyboardButton("Поделиться", url=f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start=pay_{UniqueId}")
 		)
-		bot.send_message(message.chat.id, f"Готово! Ссылка:\n<code>t.me/{UserNameBot}?start={UniqueId}</code>", parse_mode="HTML", reply_markup=Kb)
+		bot.send_message(message.chat.id, f"Готово! Ссылка:\n<code>t.me/{UserNameBot}?start=pay_{UniqueId}</code>", parse_mode="HTML", reply_markup=Kb)
 
 def ProcessAmountCheck(message) -> bool:
 	cid = message.chat.id
@@ -112,7 +118,7 @@ def send_invoice(chat_id, title, description, payload, price_amount):
 		bot.send_message(chat_id, f"Ошибка: {e}")
 		print(f"Ошибка отправки счета: {e}")
 
-def ShowChecksList(cid, current_check=None):
+def ShowChecksList(cid, current_check=None, EditMessage=None):
 	with Database(DB_NAME) as db:
 		Checks = db.get_all("Checks")
 		if current_check:
@@ -123,7 +129,7 @@ def ShowChecksList(cid, current_check=None):
 	text = '\n'.join([
 		f"🗓 Создан: <i>{time.ctime(Check['CreateTime'])}</i>",
 		f"💰 Ценник: <b>{Check['Amount']}</b>",
-		f"🌊 Многоразовый: {'✅ Да' if Check['More'] else '❌ Нет'}"
+		f"🌊 Многоразовый: {'✅ Да' if Check['More'] else '❌ Нет'}",
 		f"🏦 Оплачен: {'✅ Да' if Check['Payed'] else '❌ Нет'}",
 		f"❓ Сколько раз оплачен: <code>{Check['PayedCount']}</code>",
 		f"🔮 Ссылка: <code>t.me/{UserNameBot}?start={Check['UniqueID']}</code>"
@@ -141,7 +147,10 @@ def ShowChecksList(cid, current_check=None):
 		InlineKeyboardButton("◀️" if CIndex > 0 else "❌", callback_data=FCB),
 		InlineKeyboardButton("▶️" if CIndex < len(Checks)-1 else "❌", callback_data=SCB)
 	)
-	bot.send_message(cid, text, reply_markup=Kb, parse_mode="HTML")
+	if not EditMessage:
+		bot.send_message(cid, text, reply_markup=Kb, parse_mode="HTML")
+	else:
+		bot.edit_message_text(chat_id=cid, message_id=EditMessage, text=text, reply_markup=Kb, parse_mode="HTML")
 
 @bot.pre_checkout_query_handler(func=lambda query: True)
 def process_pre_checkout(pre_checkout_query):
@@ -152,18 +161,25 @@ def process_pre_checkout(pre_checkout_query):
 	with Database(DB_NAME) as db:
 		Check = db.get("Checks", {"UniqueID": payload})
 	if Check:
-		if not Check["More"] and Check["Payed"] == 0:
+		if Check["More"]:
 			bot.answer_pre_checkout_query(
 				pre_checkout_query.id,
 				ok=True,
 				error_message=None
 			)
 		else:
-			bot.answer_pre_checkout_query(
-				pre_checkout_query.id,
-				ok=False,
-				error_message="Чек уже оплачен."
-			)
+			if Check["Payed"]:
+				bot.answer_pre_checkout_query(
+					pre_checkout_query.id,
+					ok=False,
+					error_message="Чек уже оплачен."
+				)
+			else:
+				bot.answer_pre_checkout_query(
+					pre_checkout_query.id,
+					ok=True,
+					error_message=None
+				)
 	else:
 		bot.answer_pre_checkout_query(
 			pre_checkout_query.id,
@@ -186,7 +202,7 @@ def process_successful_payment(message):
 
 	with Database(DB_NAME) as db:
 		db.add(
-			"Payments", {
+			"Pay", {
 				"Payer": user_id, "Price": payment.total_amount,
 				"Date": int(time.time()), "rawpayload": str(payload.invoice_payloadn),
 				"TPCID": payment.telegram_payment_charge_id,
@@ -236,9 +252,9 @@ def handle_message(message):
 	if Relink.startswith("pay_") and txt.lower().startswith('/start'):
 		PayID = Relink[len("pay_"):]
 		with Database(DB_NAME) as db:
-			Check = db.get("Checks", {"UniqueID": PayID})
+			Check = db.get("Checks", {"UniqueID": PayID.strip()})
 		if not Check:
-			bot.send_message(cid, "Некорректный чек для оплаты. Проверьте ссылку.")
+			bot.send_message(cid, "Некорректный чек для оплаты. Проверьте ссылку")
 		send_invoice(cid, "Оплата", "Оплата счёта", PayID, Check["Amount"])
 	else:
 		if txt == "/add":
@@ -269,7 +285,8 @@ def handle_callback(call):
 		with Database(DB_NAME) as db:
 			Check = db.get("Checks", {"UniqueID": call.data[len("show_check_"):]})
 		if Check:
-			ShowChecksList(cid, Check['UniqueID'])
+			bot.answer_callback_query(call.id, "Далее...")
+			ShowChecksList(cid, Check['UniqueID'], mid)
 		else:
 			bot.answer_callback_query(call.id, "Не найдено!")
 
