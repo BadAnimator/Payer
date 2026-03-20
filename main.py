@@ -2,7 +2,7 @@ import os
 os.system("pip install PyTelegramBot")
 
 from utils import Database
-import time, telebot, string
+import time, telebot, string, random
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 from telebot import types
