@@ -62,6 +62,7 @@ def ProcessCreateCheck(message, amount) -> bool:
 			}
 		)
 		Kb=InlineKeyboardMarkup()
+		print(f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start={UniqueId}")
 		Kb.add(
 			InlineKeyboardButton("Поделиться", url=f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start={UniqueId}")
 		)
