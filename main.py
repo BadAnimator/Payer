@@ -62,11 +62,11 @@ def ProcessCreateCheck(message, amount) -> bool:
 			}
 		)
 		Kb=InlineKeyboardMarkup()
-		print(f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start={UniqueId}")
+		print(f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start=pay_{UniqueId}")
 		Kb.add(
-			InlineKeyboardButton("Поделиться", url=f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start={UniqueId}")
+			InlineKeyboardButton("Поделиться", url=f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start=pay_{UniqueId}")
 		)
-		bot.send_message(message.chat.id, f"Готово! Ссылка:\n<code>t.me/{UserNameBot}?start={UniqueId}</code>", parse_mode="HTML", reply_markup=Kb)
+		bot.send_message(message.chat.id, f"Готово! Ссылка:\n<code>t.me/{UserNameBot}?start=pay_{UniqueId}</code>", parse_mode="HTML", reply_markup=Kb)
 
 def ProcessAmountCheck(message) -> bool:
 	cid = message.chat.id
@@ -135,7 +135,7 @@ def ShowChecksList(cid, current_check=None):
 		InlineKeyboardButton("❌", callback_data=f"Close")
 	)
 	FCB=f"show_check_{Checks[CIndex-1]['UniqueID']}" if CIndex > 0 else "Close"
-	SCB=f"show_check_{Checks[CIndex+1]['UniqueID']}" if CIndex > len(Checks)-1 else "Close"
+	SCB=f"show_check_{Checks[CIndex+1]['UniqueID']}" if CIndex < len(Checks)-1 else "Close"
 	Kb.add(
 		InlineKeyboardButton("◀️" if CIndex > 0 else "❌", callback_data=FCB),
 		InlineKeyboardButton("◀️" if CIndex < len(Checks)-1 else "❌", callback_data=SCB)
