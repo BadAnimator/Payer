@@ -216,14 +216,16 @@ def handle_message(message):
 		else None
 	)
 	if not Relink and txt.lower().startswith('/start'):
-		bot.send_message(cid, '\n'.join([
-			"Простите, <b>некорректные данные платежа.</b>",
-			"Перейдите по <b>полученной ссылке</b> или <b>отсканируйте Qr-код.</b>",
-			"Если вы не получали ничего из этого, просьба <b>перестать использовать бота.</b>"
-		]), parse_mode="HTML")
+		bot.send_message(cid, "Пожалуйста, используйте ссылку для оплаты или QRCode")
+		return
+		# bot.send_message(cid, '\n'.join([
+		# 	"Простите, <b>некорректные данные платежа.</b>",
+		# 	"Перейдите по <b>полученной ссылке</b> или <b>отсканируйте Qr-код.</b>",
+		# 	"Если вы не получали ничего из этого, просьба <b>перестать использовать бота.</b>"
+		# ]), parse_mode="HTML")
 	# Full relink: /start LolKekCheburek
 	# Short relink (Relink): LolKekCheburek
-	if Relink.startswith("pay_"):
+	if Relink.startswith("pay_") and txt.lower().startswith('/start'):
 		PayID = Relink[len("pay_"):]
 		with Database(DB_NAME) as db:
 			Check = db.get("Checks", {"UniqueID": PayID})
