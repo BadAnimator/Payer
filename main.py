@@ -7,7 +7,7 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 from telebot import types
 
-BOT_TOKEN="8622055961:AAEXxtZPPix0i3DIKsV_pULAP0NW6wL_fIY"
+BOT_TOKEN="8622055961:AAFJrAgMIo8x5hdeYxG0tz2REC63D_1PeOE"
 ADMINS = [7925361356]
 DB_NAME = "DataBasePAYER.db"
 DCS = {
