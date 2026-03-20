@@ -1,5 +1,5 @@
 import os
-os.systen("pip install PyTelegramBot")
+os.system("pip install PyTelegramBot")
 
 from utils import Database
 import time, telebot, string
