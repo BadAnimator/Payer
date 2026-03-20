@@ -4,6 +4,7 @@ os.system("pip install PyTelegramBot")
 from utils import Database
 import time, telebot, string
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 from telebot import types
 
 BOT_TOKEN="8622055961:AAEXxtZPPix0i3DIKsV_pULAP0NW6wL_fIY"
@@ -47,7 +48,7 @@ def AdminBroadCast(text: str, pm:str = "HTML") -> bool:
 	return False
 
 def ProcessCreateCheck(message, amount) -> bool:
-	if message.text.lower() == "Нет":
+	if message.text.lower() == "нет":
 		More=False
 	else:
 		More=True
@@ -77,7 +78,12 @@ def ProcessAmountCheck(message) -> bool:
 	if UppedAmount < 1:
 		bot.send_message(cid, f"Ошибка! Сумма для оплаты не может быть меньше 1!")
 		return False
-	msg=bot.send_message(cid, f"Отлично. Сумма: {UppedAmount} звёзд. Теперь, выберите, будет ли чек подходить для многоразовой оплаты:")
+	markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+	markup.add(
+		KeyboardButton("Да"),
+		KeyboardButton("Нет")
+	)
+	msg=bot.send_message(cid, f"Отлично. Сумма: {UppedAmount} звёзд. Теперь, выберите, будет ли чек подходить для многоразовой оплаты:", reply_markup=markup)
 	bot.register_next_step_handler(msg, lambda m: ProcessCreateCheck(message=m, amount=UppedAmount))
 
 def send_invoice(chat_id, title, description, payload, price_amount):
