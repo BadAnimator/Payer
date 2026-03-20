@@ -213,7 +213,7 @@ def handle_message(message):
 	Relink = (
 		message.text.strip().split(" ")[1]
 		if len(message.text.strip().split(" ")) > 1
-		else None
+		else ""
 	)
 	if not Relink and txt.lower().startswith('/start'):
 		bot.send_message(cid, "Пожалуйста, используйте ссылку для оплаты или QRCode")
