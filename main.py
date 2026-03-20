@@ -71,14 +71,14 @@ def ProcessAmountCheck(message) -> bool:
 	if message.text.lower().startswith("/"):
 		return False # Просто молча выходим
 	if not message.text.isdigit():
-		bot.send_message(f"Ошибка! Введено не число!")
+		bot.send_message(cid, f"Ошибка! Введено не число!")
 		return False
 	UppedAmount = int(float(message.text)) + (float(message.text) > int(float(message.text)))
 	if UppedAmount < 1:
-		bot.send_message(f"Ошибка! Сумма для оплаты не может быть меньше 1!")
+		bot.send_message(cid, f"Ошибка! Сумма для оплаты не может быть меньше 1!")
 		return False
-	msg=bot.send_message(f"Отлично. Сумма: {UppedAmount} звёзд. Теперь, выберите, будет ли чек подходить для многоразовой оплаты:")
-	bot.register_next_step_handler(msg, lambda m: ProcessCreateCheck(m, UppedAmount))
+	msg=bot.send_message(cid, f"Отлично. Сумма: {UppedAmount} звёзд. Теперь, выберите, будет ли чек подходить для многоразовой оплаты:")
+	bot.register_next_step_handler(msg, lambda m: ProcessCreateCheck(message=m, amount=UppedAmount))
 
 def send_invoice(chat_id, title, description, payload, price_amount):
 	"""
