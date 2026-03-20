@@ -53,7 +53,7 @@ def ProcessCreateCheck(message, amount) -> bool:
 	else:
 		More=True
 	with Database(DB_NAME) as db:
-		UniqueId = RandomString(24)
+		UniqueId = "pay_" + RandomString(24)
 		db.add(
 			"Checks", {
 				"CreateTime": int(time.time()), "Amount": amount,
@@ -62,11 +62,11 @@ def ProcessCreateCheck(message, amount) -> bool:
 			}
 		)
 		Kb=InlineKeyboardMarkup()
-		print(f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start=pay_{UniqueId}")
+		print(f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start={UniqueId}")
 		Kb.add(
-			InlineKeyboardButton("Поделиться", url=f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start=pay_{UniqueId}")
+			InlineKeyboardButton("Поделиться", url=f"https://t.me/share/url?url=Чек%20для%20оплаты%0A{amount}%20Telegram%20Stars%0At.me/{UserNameBot}?start={UniqueId}")
 		)
-		bot.send_message(message.chat.id, f"Готово! Ссылка:\n<code>t.me/{UserNameBot}?start=pay_{UniqueId}</code>", parse_mode="HTML", reply_markup=Kb)
+		bot.send_message(message.chat.id, f"Готово! Ссылка:\n<code>t.me/{UserNameBot}?start={UniqueId}</code>", parse_mode="HTML", reply_markup=Kb)
 
 def ProcessAmountCheck(message) -> bool:
 	cid = message.chat.id
@@ -109,6 +109,7 @@ def send_invoice(chat_id, title, description, payload, price_amount):
 			is_flexible=False
 		)
 	except Exception as e:
+		bot.send_message(chat_id, f"Ошибка: {e}")
 		print(f"Ошибка отправки счета: {e}")
 
 def ShowChecksList(cid, current_check=None):
@@ -138,7 +139,7 @@ def ShowChecksList(cid, current_check=None):
 	SCB=f"show_check_{Checks[CIndex+1]['UniqueID']}" if CIndex < len(Checks)-1 else "Close"
 	Kb.add(
 		InlineKeyboardButton("◀️" if CIndex > 0 else "❌", callback_data=FCB),
-		InlineKeyboardButton("◀️" if CIndex < len(Checks)-1 else "❌", callback_data=SCB)
+		InlineKeyboardButton("▶️" if CIndex < len(Checks)-1 else "❌", callback_data=SCB)
 	)
 	bot.send_message(cid, text, reply_markup=Kb, parse_mode="HTML")
 
@@ -268,7 +269,7 @@ def handle_callback(call):
 		with Database(DB_NAME) as db:
 			Check = db.get("Checks", {"UniqueID": call.data[len("show_check_"):]})
 		if Check:
-			ShowChecksList(cid, Check)
+			ShowChecksList(cid, Check['UniqueID'])
 		else:
 			bot.answer_callback_query(call.id, "Не найдено!")
 
