@@ -56,7 +56,7 @@ def ProcessCreateCheck(message, amount) -> bool:
 		UniqueId = RandomString(24)
 		db.add(
 			"Checks", {
-				"CreateTime": int(time.time()), "Amount": UppedAmount,
+				"CreateTime": int(time.time()), "Amount": amount,
 				"More": More, "Payed": 0,
 				"UniqueID": UniqueId, "PayedCount": 0
 			}
