@@ -215,7 +215,7 @@ def handle_message(message):
 		if len(message.text.strip().split(" ")) > 1
 		else None
 	)
-	if not Relink:
+	if not Relink and txt.lower().startswith('/start'):
 		bot.send_message(cid, '\n'.join([
 			"Простите, <b>некорректные данные платежа.</b>",
 			"Перейдите по <b>полученной ссылке</b> или <b>отсканируйте Qr-код.</b>",
