@@ -236,7 +236,7 @@ def handle_message(message):
 		if txt == "/add":
 			if cid in ADMINS:
 				msg = bot.send_message(cid, f"<b>Создание чека...</b>\n\nВведите сумму:", parse_mode="HTML")
-				bot.register_next_step_handler(msg, ProcessCreateCheck)
+				bot.register_next_step_handler(msg, ProcessAmountCheck)
 		elif txt == "/checks":
 			if cid in ADMINS:
 				ShowChecksList(cid, None)
